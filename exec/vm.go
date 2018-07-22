@@ -456,6 +456,20 @@ func (proc *Process) WriteAt(p []byte, off int64) (int, error) {
 	return length, err
 }
 
+// ErrOutOfBounds is returned when you attempt to buffer memory out of the bounds of process memory
+var ErrOutOfBounds = errors.New("offset and length out of memory bounds")
+
+// BufferAt returns a slice pointing at the process memory at offset "off" for length "len"
+func (proc *Process) BufferAt(offset, length int64) ([]byte, error) {
+	mem := proc.vm.Memory()
+
+	if len(mem) < int(offset+length) {
+		return nil, ErrOutOfBounds
+	}
+
+	return mem[offset : offset+length], nil
+}
+
 // Terminate stops the execution of the current module.
 func (proc *Process) Terminate() {
 	proc.vm.abort = true
